@@ -25,8 +25,8 @@ quantity=1        # Default quantity to mint (1 NFT)
 # =================================================================
 # The sender wallet is the one that will mint the NFT.
 # Make sure you have enough ADA in this wallet to cover fees. Please replace with your own address and signing key.
-#sender=addr_test1qqfjh0px4hlq65xtkm7yp06uu3mnxpqsvek473nqk9w03mf6ud3mth5yzg5js25zeqd9q7x34psa75l4e8dnmtqesnusz86qd2
-#sender_key=./payment.skey  # The signing key for the sender's wallet
+sender=addr_test1qqyvanljnlyg9u0geayhffr69qsukndrn6t28kuu6hvkj765rgk7yt8w8q46q9pfd8u4xy2gwsssf6v5l7z294hr07yq2y2wud
+sender_key=payment.skey  # The signing key for the sender's wallet
 
 # Optional: Instead of hardcoding, you can store these in an `env.sh` file.
 # Create `env.sh` with the following content:
@@ -103,31 +103,31 @@ echo "Transaction Input: $tx_in"
 # Build the Minting Transaction
 # =================================================================
 cardano-cli conway transaction build \
-  --testnet-magic 1 \
-  --tx-in $tx_in \
-  --tx-out "$receiver_addr+1500000+$quantity $policy_id.$token_hex" \
-  --mint "$quantity $policy_id.$token_hex" \
-  --mint-script-file $mint_script_file_path \
-  --metadata-json-file metadata-$name.json \
-  --change-address $sender \
-  --required-signer $mint_signing_key_file_path \
-  --out-file mint-nft.draft
+  --testnet-magic 1 \  # Use testnet (modify if using mainnet)
+  --tx-in $tx_in \  # The UTXO used as input
+  --tx-out "$receiver_addr+1500000 + $quantity $policy_id.$token_hex" \  # Send NFT to receiver
+  --mint "$quantity $policy_id.$token_hex" \  # Define minted asset
+  --mint-script-file $mint_script_file_path \  # Reference the minting script
+  --metadata-json-file metadata-$name.json \  # Attach metadata file
+  --change-address $sender \  # Send any leftover ADA back to sender
+  --required-signer $mint_signing_key_file_path \  # Signing key required for minting
+  --out-file mint-nft.draft  # Output unsigned transaction draft
 
 # =================================================================
 # Sign the Transaction
 # =================================================================
 cardano-cli conway transaction sign \
-  --signing-key-file $mint_signing_key_file_path \
-  --signing-key-file $sender_key \
-  --testnet-magic 1 \
-  --tx-body-file mint-nft.draft \
-  --out-file mint-nft.signed
+  --signing-key-file $mint_signing_key_file_path \  # Policy signing key
+  --signing-key-file $sender_key \  # Sender wallet signing key
+  --testnet-magic 1 \  # Specify testnet
+  --tx-body-file mint-nft.draft \  # Reference unsigned transaction
+  --out-file mint-nft.signed  # Output signed transaction
 
 # =================================================================
 # Submit the Transaction
 # =================================================================
 cardano-cli conway transaction submit \
   --tx-file mint-nft.signed \
-  --testnet-magic 1
+  --testnet-magic 1  # Send transaction to testnet
 
 echo "NFT Minted Successfully!"
